@@ -45,7 +45,7 @@ export default function AgentChat() {
   };
 
   return (
-    <div className="flex flex-col max-w-4xl w-full mx-auto bg-gray-50 dark:bg-neutral-900 mb-8 rounded-lg shadow-lg mt-8 h-[750px]">
+    <div className="flex flex-col max-w-4xl w-full mx-auto bg-gray-50 dark:bg-neutral-900 mb-8 rounded-lg shadow-lg mt-8 flex-1 h-full min-h-0">
       {/* Header */}
       <header className="px-4 py-3 bg-white dark:bg-neutral-800 shadow flex items-center justify-between">
         <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">AI Agent Chat</h1>
