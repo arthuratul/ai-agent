@@ -24,7 +24,7 @@ export default function AgentChat() {
     setInput('');
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:4000/agents', {
+      const res = await fetch('http://localhost:4000/agents/runLLM', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMessage.text }),
