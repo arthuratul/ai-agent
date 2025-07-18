@@ -8,6 +8,10 @@ export class AgentsController {
 
   @Post()
   create(@Body() createAgentDto: CreateAgentDto) {
+    console.log(createAgentDto);
+    return {
+      message: 'Agent is a work in progeress....',
+    };
     return this.agentsService.create(createAgentDto);
   }
 }
