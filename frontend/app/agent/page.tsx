@@ -6,15 +6,51 @@ type Message = {
   text: string;
 };
 
+type ChatHistoryResponse = {
+  _id: string;
+  chatMessage: Array<{
+    role: 'user' | 'assistant';
+    content: string;
+  }>;
+  chatSummary: string;
+  __v: number;
+};
+
 export default function AgentChat() {
   const [messages, setMessages] = useState<Message[]>([]); // Chat is blank by default
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Load chat history when component mounts
+  useEffect(() => {
+    const loadChatHistory = async () => {
+      try {
+        const response = await fetch('http://localhost:4000/agents/chat-history');
+        if (response.ok) {
+          const data: ChatHistoryResponse = await response.json();
+          if (data && data.chatMessage) {
+            const historyMessages: Message[] = data.chatMessage.map(msg => ({
+              sender: msg.role === 'user' ? 'user' : 'agent',
+              text: msg.content
+            }));
+            setMessages(historyMessages);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading chat history:', error);
+      } finally {
+        setLoadingHistory(false);
+      }
+    };
+
+    loadChatHistory();
+  }, []);
 
   const handleSend = async (e: React.FormEvent | React.KeyboardEvent) => {
     e.preventDefault();
@@ -53,23 +89,31 @@ export default function AgentChat() {
       </header>
       {/* Message List */}
       <main className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`max-w-xs px-4 py-2 rounded-lg shadow text-sm
-                ${msg.sender === 'user'
-                  ? 'bg-blue-500 text-white rounded-br-none'
-                  : 'bg-gray-200 dark:bg-neutral-700 text-gray-900 dark:text-gray-100 rounded-bl-none'}
-              `}
-            >
-              {msg.text}
-            </div>
+        {loadingHistory ? (
+          <div className="flex justify-center items-center h-32">
+            <div className="text-gray-500 dark:text-gray-400">Loading chat history...</div>
           </div>
-        ))}
-        <div ref={messagesEndRef} />
+        ) : (
+          <>
+            {messages.map((msg, idx) => (
+              <div
+                key={idx}
+                className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-xs px-4 py-2 rounded-lg shadow text-sm
+                    ${msg.sender === 'user'
+                      ? 'bg-blue-500 text-white rounded-br-none'
+                      : 'bg-gray-200 dark:bg-neutral-700 text-gray-900 dark:text-gray-100 rounded-bl-none'}
+                  `}
+                >
+                  {msg.text}
+                </div>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </>
+        )}
       </main>
       {/* Input Box */}
       <form
@@ -83,12 +127,12 @@ export default function AgentChat() {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleInputKeyDown}
-          disabled={loading}
+          disabled={loading || loadingHistory}
         />
         <button
           type="submit"
           className="px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold shadow hover:bg-blue-600 transition disabled:opacity-50"
-          disabled={loading || !input.trim()}
+          disabled={loading || !input.trim() || loadingHistory}
         >
           Send
         </button>
