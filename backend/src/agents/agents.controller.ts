@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get } from '@nestjs/common';
 import { AgentsService } from './agents.service';
 import { CreateAgentDto } from './dto/create-agent.dto';
 
@@ -8,10 +8,26 @@ export class AgentsController {
 
   @Post('runLLM')
   async runLLM(@Body() createAgentDto: CreateAgentDto) {
-    console.log(createAgentDto);
-    const response  = await this.agentsService.getOpenAIResponse(createAgentDto.message);
+    
+    await this.agentsService.updateChatHistory({
+      role: 'user',
+      content: createAgentDto.message,
+    });
+
+    const chatHistory = await this.agentsService.getChatHistory();
+
+    const response = await this.agentsService.getOpenAIResponse(chatHistory?.chatMessage || []);
+
+    await this.agentsService.updateChatHistory(response);
+
     return {
-      message: response,
+      message: response.content,
     };
+  }
+
+
+  @Get('chat-history')
+  async getChatHistory() {
+    return this.agentsService.getChatHistory();
   }
 }
