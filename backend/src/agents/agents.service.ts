@@ -134,4 +134,23 @@ export class AgentsService {
     );
     return summary;
   }
+
+  async createNewChat() {
+    try {
+      // Delete all existing chat documents
+      await this.chatModel.deleteMany({});
+      // Create a new empty chat document
+      const newChat = await this.chatModel.create({
+        chatMessage: [],
+        chatSummary: '',
+      });
+      return {
+        message: 'New chat created successfully',
+        chatId: newChat._id,
+      };
+    } catch (error) {
+      console.error('Error in createNewChat:', error);
+      throw error;
+    }
+  }
 }

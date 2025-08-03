@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get } from '@nestjs/common';
+import { Controller, Post, Body, Get, Delete } from '@nestjs/common';
 import { AgentsService } from './agents.service';
 import { CreateAgentDto } from './dto/create-agent.dto';
 
@@ -40,5 +40,10 @@ export class AgentsController {
   @Get('chat-history')
   async getChatHistory() {
     return this.agentsService.getChatHistory();
+  }
+
+  @Delete('new-chat')
+  async createNewChat() {
+    return this.agentsService.createNewChat();
   }
 }
